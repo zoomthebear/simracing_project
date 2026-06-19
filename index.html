@@ -357,17 +357,17 @@
 
     <div class="chart-col">
       <div class="chart-shell">
-        <svg id="chart-svg" viewBox="0 0 420 420">
-          <line class="axis-line" x1="40" y1="205" x2="400" y2="205"/>
-          <line class="axis-line" x1="220" y1="20" x2="220" y2="390"/>
-          <text class="axis-label" x="220" y="14" text-anchor="middle">สนามแข่ง</text>
-          <text class="axis-label" x="220" y="404" text-anchor="middle">แรลลี่ / ออฟโรด</text>
-          <text class="axis-label" x="36" y="209" text-anchor="end">เล่นเอามัน</text>
-          <text class="axis-label" x="404" y="209" text-anchor="start">เอาจริง</text>
+        <svg id="chart-svg" viewBox="0 0 460 420">
+          <line class="axis-line" x1="60" y1="205" x2="420" y2="205"/>
+          <line class="axis-line" x1="240" y1="20" x2="240" y2="390"/>
+          <text class="axis-label" x="240" y="14" text-anchor="middle">สนามแข่ง</text>
+          <text class="axis-label" x="240" y="404" text-anchor="middle">แรลลี่ / ออฟโรด</text>
+          <text class="axis-label" x="56" y="198" text-anchor="end">เล่นเอามัน</text>
+          <text class="axis-label" x="424" y="198" text-anchor="start">เอาจริง</text>
           <g id="dots"></g>
           <g class="user-dot" id="user-dot">
-            <circle cx="220" cy="205" r="11"/>
-            <text x="220" y="190" text-anchor="middle">คุณ</text>
+            <circle cx="240" cy="205" r="11"/>
+            <text x="240" y="190" text-anchor="middle">คุณ</text>
           </g>
         </svg>
         <div class="popup" id="popup"></div>
@@ -423,7 +423,7 @@ let activePlat = null;
 let popupCloseTimer = null;
 
 function toSvgCoords(x, y) {
-  const px = 40 + (x/100) * 360;
+  const px = 60 + (x/100) * 360;
   const py = 20 + (y/100) * 370;
   return {px, py};
 }
