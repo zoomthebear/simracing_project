@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>เครื่องมือหาเกม Sim Racing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-border: #2a2e38;
+    --text-primary: #f2f3f5;
+    --text-secondary: #9aa0ad;
+    --text-tertiary: #6b7280;
+    --accent: #4f8cff;
+    --accent-bg: rgba(79, 140, 255, 0.12);
+    --warning: #e0a23b;
+    --c-blue: #4f8cff;
+    --c-teal: #2bb6a3;
+    --c-coral: #ef6a5a;
+    --c-amber: #f0a93b;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Noto Sans Thai", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 32px 20px;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .layout {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .controls {
+    flex: 1 1 260px;
+    min-width: 240px;
+  }
+
+  .chart-col {
+    flex: 2 1 380px;
+    min-width: 300px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin: 0 0 12px;
+  }
+
+  .slider-block {
+    margin-bottom: 18px;
+  }
+
+  .slider-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .slider-row label {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .slider-row span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .slider-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .pill-btn:hover { border-color: var(--accent); }
+
+  .pill-btn.active {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .toggle-row {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+  }
+
+  .toggle-row label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+
+  .toggle-row input { cursor: pointer; }
+
+  .chart-shell {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 8px;
+  }
+
+  svg { display: block; width: 100%; height: auto; }
+
+  .axis-line { stroke: var(--panel-border); stroke-width: 1; }
+  .axis-label { font-size: 12px; font-weight: 500; fill: var(--text-secondary); }
+
+  .dot { cursor: pointer; transition: r 0.2s, opacity 0.2s; }
+  .dot-label { font-size: 10px; fill: var(--text-secondary); transition: opacity 0.2s; pointer-events: none; }
+
+  .user-dot circle {
+    fill: var(--bg);
+    stroke: var(--text-primary);
+    stroke-width: 2.5;
+  }
+  .user-dot text {
+    font-size: 11px;
+    font-weight: 500;
+    fill: var(--text-primary);
+  }
+
+  .popup {
+    position: absolute;
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 12px;
+    width: 230px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 20;
+  }
+
+  .popup-name {
+    font-weight: 500;
+    font-size: 13px;
+    margin: 0 0 6px;
+  }
+
+  .sub-badge {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--warning);
+    border: 1px solid var(--warning);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-left: 4px;
+  }
+
+  .popup-comment {
+    color: var(--text-secondary);
+    margin: 0 0 6px;
+    line-height: 1.4;
+  }
+
+  .popup-price {
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+
+  .popup-link {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .popup-link:hover { text-decoration: underline; }
+
+  .popup-note {
+    color: var(--text-tertiary);
+    font-size: 10px;
+    margin: 8px 0 0;
+    line-height: 1.3;
+  }
+
+  .matches-section { margin-top: 16px; }
+
+  .matches-title {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+  }
+
+  .match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    background: var(--panel);
+    transition: border-color 0.15s;
+  }
+  .match-row:hover { border-color: var(--accent); }
+
+  .match-rank {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    width: 14px;
+  }
+
+  .match-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .match-name { font-size: 14px; }
+
+  .match-price {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-left: auto;
+  }
+
+  .empty-state {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin: 0;
+  }
+
+  .disclaimer {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>เครื่องมือหาเกม Sim Racing</h1>
+    <p>ปรับความชอบของคุณ กรองตัวเลือก แล้วดูว่าเกม sim racing ไหนเหมาะกับคุณที่สุด</p>
+  </header>
+
+  <div class="layout">
+
+    <div class="controls">
+      <p class="panel-title">ความชอบของคุณ</p>
+
+      <div class="slider-block">
+        <div class="slider-row">
+          <label for="pref-type">สนามแข่ง vs แรลลี่</label>
+        </div>
+        <input type="range" id="pref-type" min="0" max="100" step="1" value="50" />
+        <div class="slider-ends"><span>สนามแข่ง</span><span>แรลลี่</span></div>
+      </div>
+
+      <div class="slider-block">
+        <div class="slider-row">
+          <label for="pref-serious">เล่นเอามัน vs เอาจริง</label>
+        </div>
+        <input type="range" id="pref-serious" min="0" max="100" step="1" value="50" />
+        <div class="slider-ends"><span>เล่นเอามัน</span><span>เอาจริง</span></div>
+      </div>
+
+      <p class="panel-title">ตัวกรอง</p>
+
+      <div class="slider-block">
+        <div class="slider-row">
+          <label for="budget">งบประมาณ</label>
+          <span id="budget-out">ไม่จำกัด</span>
+        </div>
+        <input type="range" id="budget" min="0" max="3" step="1" value="0" />
+        <div class="slider-ends"><span>ไม่จำกัด</span><span>น้อย</span><span>กลาง</span><span>สูง</span></div>
+      </div>
+
+      <div class="slider-block">
+        <p class="panel-title" style="margin-bottom:8px;">แพลตฟอร์ม</p>
+        <div class="btn-row">
+          <button type="button" class="pill-btn plat-btn" data-plat="pc">PC</button>
+          <button type="button" class="pill-btn plat-btn" data-plat="playstation">PlayStation</button>
+          <button type="button" class="pill-btn plat-btn" data-plat="xbox">Xbox</button>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label for="hide-sub">ซ่อนเกมที่ต้องสมัครสมาชิกรายเดือน</label>
+        <input type="checkbox" id="hide-sub" />
+      </div>
+    </div>
+
+    <div class="chart-col">
+      <div class="chart-shell">
+        <svg id="chart-svg" viewBox="0 0 420 420">
+          <line class="axis-line" x1="40" y1="205" x2="400" y2="205"/>
+          <line class="axis-line" x1="220" y1="20" x2="220" y2="390"/>
+          <text class="axis-label" x="220" y="14" text-anchor="middle">สนามแข่ง</text>
+          <text class="axis-label" x="220" y="404" text-anchor="middle">แรลลี่ / ออฟโรด</text>
+          <text class="axis-label" x="36" y="209" text-anchor="end">เล่นเอามัน</text>
+          <text class="axis-label" x="404" y="209" text-anchor="start">เอาจริง</text>
+          <g id="dots"></g>
+          <g class="user-dot" id="user-dot">
+            <circle cx="220" cy="205" r="11"/>
+            <text x="220" y="190" text-anchor="middle">คุณ</text>
+          </g>
+        </svg>
+        <div class="popup" id="popup"></div>
+      </div>
+
+      <div class="matches-section">
+        <p class="matches-title">เกมที่ตรงที่สุด</p>
+        <div class="match-list" id="ranked-list"></div>
+      </div>
+
+      <p class="disclaimer">เลื่อนเมาส์ไปที่เกมเพื่อดูคำอธิบายสั้นๆ ตำแหน่งของเกมบนกราฟเป็นค่าประมาณ ใช้เป็นจุดเริ่มต้นในการสำรวจ ไม่ใช่การจัดอันดับที่ตายตัว</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const games = [
+  {name:"iRacing", x:90, y:8, budget:2, platforms:["pc"], color:"c-blue", sub:true, comment:"มาตรฐานของการแข่งออนไลน์ระดับจริงจัง สนามแน่น คู่แข่งฝีมือดี แต่เส้นทางเรียนรู้ค่อนข้างชัน"},
+  {name:"rFactor 2", x:80, y:12, budget:1, platforms:["pc"], color:"c-blue", sub:false, comment:"ที่รักของวงการม็อด ฟิสิกส์ลึกแบบดิบๆ แม้หน้าตาเกมจะดูเก่าไปบ้าง"},
+  {name:"ACC", x:78, y:14, budget:1, platforms:["pc","playstation","xbox"], color:"c-blue", sub:false, comment:"ตัวเลือกหลักสำหรับสาย GT3 ได้ลิขสิทธิ์ทางการ เหมาะกับคนที่แข่งแบบลีกจริงจัง"},
+  {name:"Automobilista 2", x:75, y:18, budget:1, platforms:["pc"], color:"c-blue", sub:false, comment:"โมเดลยางทำได้ดีเกินราคา มีรถและสนามให้เลือกหลากหลายมาก"},
+  {name:"Le Mans Ultimate", x:88, y:10, budget:2, platforms:["pc"], color:"c-blue", sub:false, comment:"ซิมทางการของ WEC/Le Mans ยังพัฒนาต่อเนื่อง แต่ได้รับคำชมเรื่องความลึกของการแข่งระยะไกล"},
+  {name:"F1 25", x:60, y:22, budget:1, platforms:["pc","playstation","xbox"], color:"c-teal", sub:false, comment:"ลิขสิทธิ์ F1 ทางการ การควบคุมและภาพรวมทำได้ลงตัว เหมาะทั้งมือใหม่และคนกลับมาเล่น"},
+  {name:"Gran Turismo 7", x:30, y:18, budget:1, platforms:["playstation"], color:"c-teal", sub:false, comment:"สวยงาม ขัดเกลามาดี เป็นทางเข้าสู่การแข่งสนามที่ง่ายที่สุดบนคอนโซล"},
+  {name:"Forza Motorsport", x:25, y:15, budget:1, platforms:["pc","xbox"], color:"c-teal", sub:false, comment:"มีตัวช่วยเป็นมิตรและภาพสวยงาม เหมาะเป็นจุดเริ่มต้นที่สบายๆ"},
+  {name:"EA WRC", x:65, y:85, budget:1, platforms:["pc","playstation","xbox"], color:"c-coral", sub:false, comment:"ด่านแข่ง WRC ลิขสิทธิ์ทางการ การควบคุมโหดและสมจริง"},
+  {name:"Dirt Rally 2.0", x:78, y:80, budget:0, platforms:["pc","playstation","xbox"], color:"c-coral", sub:false, comment:"ขวัญใจสายแรลลี่ ทั้งทางลาดยางและกรวด ถือเป็นซิมแรลลี่คลาสสิก"},
+  {name:"RBR (Richard Burns Rally)", x:90, y:92, budget:0, platforms:["pc"], color:"c-coral", sub:false, comment:"เกมเก่าแต่ฟิสิกส์ระดับตำนาน ชุมชนม็อดยังคงทำให้เกมมีชีวิตอยู่สำหรับสายแรลลี่เอาจริง"},
+  {name:"WRC Generations", x:72, y:78, budget:1, platforms:["pc"], color:"c-coral", sub:false, comment:"ตัวเลือกแรลลี่ราคาประหยัด ต่อยอดจากภาคก่อนๆ ปรับการควบคุมให้ดีขึ้น"},
+  {name:"BeamNG.drive", x:50, y:65, budget:0, platforms:["pc"], color:"c-amber", sub:false, comment:"แซนด์บ็อกซ์ฟิสิกส์ตัวถังนิ่ม เน้นความวุ่นวายและการชนมากกว่าการแข่งขันจริงจัง"},
+  {name:"Forza Horizon 5", x:15, y:60, budget:1, platforms:["pc","xbox"], color:"c-amber", sub:false, comment:"โลกเปิดสไตล์อาร์เคด สนุกสำหรับการสำรวจออฟโรดแบบชิลล์ มากกว่าความแม่นยำแบบซิม"},
+  {name:"DiRT 5", x:25, y:70, budget:1, platforms:["pc","playstation","xbox"], color:"c-amber", sub:false, comment:"เกมออฟโรดแนวอาร์เคด เล่นสนุกกับเพื่อนได้ มากกว่าเน้นความสมจริง"},
+  {name:"DiRT 4", x:40, y:58, budget:0, platforms:["pc","playstation","xbox"], color:"c-amber", sub:false, comment:"โหมดอาชีพแรลลี่พร้อมตัวสร้างด่าน 'Your Stage' แบบสุ่ม ออกแนวกึ่งซิมมากกว่าอาร์เคดล้วน"}
+];
+
+const svgNS = "http://www.w3.org/2000/svg";
+const dotsG = document.getElementById("dots");
+const popup = document.getElementById("popup");
+const rankedList = document.getElementById("ranked-list");
+const budgetSlider = document.getElementById("budget");
+const budgetOut = document.getElementById("budget-out");
+const budgetLabels = ["ไม่จำกัด","น้อย","กลาง","สูง"];
+const prefType = document.getElementById("pref-type");
+const prefSerious = document.getElementById("pref-serious");
+const userDot = document.getElementById("user-dot");
+const userCircle = userDot.querySelector("circle");
+const userLabel = userDot.querySelector("text");
+const hideSub = document.getElementById("hide-sub");
+const chartShell = document.querySelector(".chart-shell");
+
+let activePlat = null;
+let popupCloseTimer = null;
+
+function toSvgCoords(x, y) {
+  const px = 40 + (x/100) * 360;
+  const py = 20 + (y/100) * 370;
+  return {px, py};
+}
+
+function popupHtml(g) {
+  return '<p class="popup-name">' + g.name + (g.sub ? ' <span class="sub-badge">รายเดือน</span>' : '') + '</p>' +
+    '<p class="popup-comment">' + g.comment + '</p>';
+}
+
+// Popup stays open while hovered over the trigger OR the popup itself,
+// with a short delay before closing so the cursor can travel to the link.
+function cancelPopupClose() {
+  if (popupCloseTimer) {
+    clearTimeout(popupCloseTimer);
+    popupCloseTimer = null;
+  }
+}
+
+function scheduleClosePopup() {
+  cancelPopupClose();
+  popupCloseTimer = setTimeout(() => {
+    popup.style.display = "none";
+  }, 250);
+}
+
+function openPopup(g, left, top) {
+  cancelPopupClose();
+  popup.innerHTML = popupHtml(g);
+  const shellRect = chartShell.getBoundingClientRect();
+  popup.style.left = Math.min(left, shellRect.width - 246) + "px";
+  popup.style.top = Math.max(top, 0) + "px";
+  popup.style.display = "block";
+}
+
+popup.addEventListener("mouseenter", cancelPopupClose);
+popup.addEventListener("mouseleave", scheduleClosePopup);
+
+function render() {
+  dotsG.innerHTML = "";
+  const budgetVal = parseInt(budgetSlider.value, 10);
+  const userX = parseInt(prefSerious.value, 10);
+  const userY = parseInt(prefType.value, 10);
+  const subHidden = hideSub.checked;
+
+  const scored = [];
+
+  games.forEach(g => {
+    const matchesBudget = budgetVal === 0 || g.budget <= budgetVal;
+    const matchesPlat = !activePlat || g.platforms.includes(activePlat);
+    const matchesSub = !subHidden || !g.sub;
+    const match = matchesBudget && matchesPlat && matchesSub;
+
+    const {px, py} = toSvgCoords(g.x, g.y);
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", px);
+    circle.setAttribute("cy", py);
+    circle.setAttribute("r", match ? 9 : 6);
+    circle.setAttribute("class", "dot " + g.color);
+    circle.style.fill = "var(--" + g.color + ")";
+    circle.setAttribute("opacity", match ? "1" : "0.15");
+
+    circle.addEventListener("mouseenter", (e) => {
+      const svgEl = e.target.closest("svg");
+      const svgRect = svgEl.getBoundingClientRect();
+      const shellRect = chartShell.getBoundingClientRect();
+      const left = (svgRect.left - shellRect.left) + (px/420) * svgRect.width + 14;
+      const top = (svgRect.top - shellRect.top) + (py/420) * svgRect.height - 10;
+      openPopup(g, left, top);
+    });
+    circle.addEventListener("mouseleave", scheduleClosePopup);
+    dotsG.appendChild(circle);
+
+    const label = document.createElementNS(svgNS, "text");
+    label.setAttribute("x", px);
+    label.setAttribute("y", py - 13);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("class", "dot-label");
+    label.setAttribute("opacity", match ? "1" : "0.15");
+    label.textContent = g.name + (g.sub ? " $" : "");
+    dotsG.appendChild(label);
+
+    if (match) {
+      const dx = g.x - userX, dy = g.y - userY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      scored.push({g, dist});
+    }
+  });
+
+  scored.sort((a,b) => a.dist - b.dist);
+  rankedList.innerHTML = "";
+  if (scored.length === 0) {
+    rankedList.innerHTML = '<p class="empty-state">ไม่มีเกมที่ตรงกับตัวกรองนี้</p>';
+  } else {
+    scored.slice(0,3).forEach((item) => {
+      const i = scored.indexOf(item);
+      const row = document.createElement("div");
+      row.className = "match-row";
+      row.innerHTML =
+        '<span class="match-rank">' + (i+1) + '</span>' +
+        '<span class="match-swatch" style="background:var(--' + item.g.color + ')"></span>' +
+        '<span class="match-name">' + item.g.name + '</span>' +
+        (item.g.sub ? '<span class="match-price">รายเดือน</span>' : '');
+      row.addEventListener("mouseenter", () => {
+        const rowRect = row.getBoundingClientRect();
+        const shellRect = chartShell.getBoundingClientRect();
+        const listRect = rankedList.getBoundingClientRect();
+        const left = (listRect.left - shellRect.left) + listRect.width + 14;
+        const top = (rowRect.top - shellRect.top);
+        openPopup(item.g, left, top);
+      });
+      row.addEventListener("mouseleave", scheduleClosePopup);
+      rankedList.appendChild(row);
+    });
+  }
+
+  budgetOut.textContent = budgetLabels[budgetVal];
+
+  const {px: upx, py: upy} = toSvgCoords(userX, userY);
+  userCircle.setAttribute("cx", upx);
+  userCircle.setAttribute("cy", upy);
+  userLabel.setAttribute("x", upx);
+  userLabel.setAttribute("y", upy - 16);
+}
+
+prefType.addEventListener("input", render);
+prefSerious.addEventListener("input", render);
+budgetSlider.addEventListener("input", render);
+hideSub.addEventListener("change", render);
+
+document.querySelectorAll(".plat-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const val = btn.dataset.plat;
+    activePlat = activePlat === val ? null : val;
+    document.querySelectorAll(".plat-btn").forEach(b => b.classList.toggle("active", b.dataset.plat === activePlat));
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
